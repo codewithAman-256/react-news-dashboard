@@ -9,9 +9,9 @@ export default function App() {
     async function fetchNews() {
       try {
         const res = await fetch(
-          `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=93f642bbc02b433c8c9c7e9a3e30ca47
-`
+          `https://news-backend-dicf.onrender.com/api/news?category=${category}`
         );
+
         const data = await res.json();
         console.log("Fetched:", data);
         setArticles(data.articles || []);
