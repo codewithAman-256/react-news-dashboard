@@ -1,27 +1,48 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 
 export default function App() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [category, setCategory] = useState("general");
 
+  // 🛑 Cache to avoid re-fetching
+  const cache = useRef({});
+
+  // 🛑 Debounce timeout
+  const debounceRef = useRef(null);
+
   useEffect(() => {
+    // If cached → load instantly
+    if (cache.current[category]) {
+      setArticles(cache.current[category]);
+      setLoading(false);
+      return;
+    }
+
+    // Reset loader
+    setLoading(true);
+
+    // Debounce to prevent multiple requests
+    clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetchNews();
+    }, 400);
+
     async function fetchNews() {
       try {
         const res = await fetch(
-          `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=93f642bbc02b433c8c9c7e9a3e30ca47
-`
+          `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=93f642bbc02b433c8c9c7e9a3e30ca47`
         );
         const data = await res.json();
-        console.log("Fetched:", data);
+
+        cache.current[category] = data.articles || []; // save to cache
         setArticles(data.articles || []);
       } catch (error) {
-        console.error("Error fetching news:", error);
+        console.error("Error:", error);
       } finally {
         setLoading(false);
       }
     }
-    fetchNews();
   }, [category]);
 
   const categories = [
@@ -48,7 +69,7 @@ export default function App() {
       </h1>
 
       {/* Category Buttons */}
-      <div style={{ marginBottom: "20px" }}>
+      <div style={{ marginBottom: "20px", textAlign: "center" }}>
         {categories.map((cat) => (
           <button
             key={cat}
@@ -62,6 +83,7 @@ export default function App() {
               color: category === cat ? "#fff" : "#000",
               cursor: "pointer",
               fontWeight: "bold",
+              transition: "0.2s",
             }}
           >
             {cat.charAt(0).toUpperCase() + cat.slice(1)}
@@ -69,10 +91,9 @@ export default function App() {
         ))}
       </div>
 
+      {/* Loader */}
       {loading ? (
-        <p style={{ textAlign: "center" }}>Loading latest headlines...</p>
-      ) : articles.length === 0 ? (
-        <p style={{ textAlign: "center" }}>No news found.</p>
+        <p style={{ textAlign: "center" }}>Loading news...</p>
       ) : (
         <div
           style={{
