@@ -31,13 +31,8 @@ export default function App() {
     async function fetchNews() {
       try {
         const res = await fetch(
-<<<<<<< HEAD
           `https://newsapi.org/v2/top-headlines?country=us&category=${category}&apiKey=93f642bbc02b433c8c9c7e9a3e30ca47`
-=======
-          `https://news-backend-dicf.onrender.com/api/news?category=${category}`
->>>>>>> d90db990b079dacca54ff240d031a0b042f251ed
         );
-
         const data = await res.json();
 
         cache.current[category] = data.articles || []; // save to cache
